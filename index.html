@@ -1,0 +1,1074 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Peach Pilot — Internal Pitch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<script src="deck-stage.js"></script>
+<script type="application/json" id="speaker-notes">
+[
+  "Welcome. Before we get into what Peach Pilot is, we need to be honest about the ground everyone else is standing on. Ninety-five percent of enterprise AI pilots deliver no measurable business impact. That is MIT NANDA, 2025. Ninety-five. Not a model problem. It is a foundation problem. The default AI playbook is to pick a workflow, build an agent, and ship. It fails for three reasons. First, AI tools forget. They don't retain context between sessions, they don't learn from corrections, and they sit outside the systems where work actually happens. MIT calls this the core barrier to scaling. Second, AI amplifies bad data. It does not fix it. Sixty percent of AI projects will be abandoned through 2026 because the data underneath is broken. Third, companies are taking processes designed for humans and wrapping AI around them. That produces a faster version of the wrong thing. Consultants, the traditional backstop, spend more than sixty percent of their time just gathering information. Clients pay premium rates to be re-learned on every engagement. So leaders end up stuck, afraid, and unsure where to start. That is the market we are entering.",
+  "Here is our answer. Build the foundation first. Then redesign the work on top of it. Every failure mode on the last slide has the same root cause. The company was never made legible to AI in the first place. The Company Brain is how we fix that. Three things it does. One, it learns your company cold. Workflows, data, people, context, all captured in one system that compounds. Nothing walks out the door when someone quits. Two, it unifies your structured data with the human context that's locked across your source systems. We use Nango, a self-hosted integration layer with over 700 connectors, to pull from Gmail, Outlook, Slack, Teams, JIRA, Confluence, Asana, Salesforce, and more. Agents need both structured and human context to reason well. Three, we don't just automate your current workflows. We redesign them from first principles, then deploy agents into processes actually designed for them. Humans stay in the loop. Our Forward Deployed Engineers embed to build the foundation. Executives stay accountable for strategic decisions. End users work alongside the agents. People move to the edges where judgment belongs. AI runs the middle. The Company Brain is the foundation. The transformation runs on top of it.",
+  "Let's zoom into the Brain itself. Two layers. One foundation. The Knowledge Library stores what the company knows. The Reasoning Engine decides what to do about it. The library holds six kinds of information. Company Knowledge, how your business actually operates. Domain Knowledge, industry rules and regulations. Operational Signal, the live heartbeat of the business. Strategic Context, what the CEO actually cares about, most of which has never been written down. Market Intelligence, what is changing outside your walls. And an Expert Agent Library with deep specialists we've built and maintain. Ownership is explicit: clients own Company, Operational, and Strategic. We own Domain and the Expert Agents. Market Intelligence is shared. The Reasoning Engine runs in two modes. Strategic reasoning for high-stakes deliberative decisions, where humans approve. Operational reasoning for fast continuous decisions, where humans review exceptions. Most tools in the market give you a library or an agent. We build both so they stay in sync. The agents reason over the library. The library captures what the agents learn. The loop closes. And it gets smarter every month.",
+  "Most AI companies build a single agent and call it a product. JP built an organizational structure. Eighty-two agents arranged like the departments of a real company. Each agent has a defined scope, a manager, a budget, error targets, and escalation rules. The hierarchy is the product. Five layers. Advisory, eight agents. Strategic counsel on specialized domains. Recommend only, never act. Executive, five agents. C-suite decision-making and resource allocation. Major decisions require human board approval. Business Function, thirteen agents. VP-level department leadership. Each owns a slice of the knowledge graph and manages Production agents within their domain. Production, around fifty agents. Individual contributors. SDR, AE, Frontend Eng, Backend Eng, AP/AR, Recruiter, Help Desk, Security Ops, and more. Narrow scopes, defined tool access. Meta, nine agents. Platform operations: Router, Security Guardian, Governance Agent, Quality Sentinel, Knowledge Curator, Performance Monitor, and more. Error targets are enforced by the Quality Sentinel. Advisory under one percent. Executive under two. Business Function under three. Production under five. Meta under one. These are measured, not aspirational. Work-in-progress limits keep the system lean. Default three for Production, five for Business Function. Agents pull from queues. They do not have work pushed at them. Humans stay accountable for financial, legal, security, and customer-facing actions. Always. No exceptions based on confidence or track record. The structure is what makes the system operable.",
+  "A lot of AI startups have impressive slides and nothing running. JP built the opposite. There is a working system in production today on Google Cloud, verified end to end. Engineers joining Peach Pilot are not starting from a whiteboard. Memgraph is the storage layer of the Company Brain. Graph database, Cypher query language, two GCE VMs firewalled on GCP. Every entity and every relationship lives here. Qdrant handles semantic search and embeddings. Memgraph and Qdrant work together. Graph traversal for structured relationships, vectors for semantic similarity. PCMS, the Personal Context Management Service, is the main API, running FastAPI on Cloud Run. The Management API handles tenant creation, API keys, and JWT authentication. Multi-tenant isolation is verified with 44 passing tests. LiteLLM proxy is our unified access layer to frontier models from Anthropic, OpenAI, and Google. We are model-agnostic by design. The Router agent picks the best model for each task. Firebase dashboard is the human-facing surface, with OAuth working and multi-tenant isolation verified. Agent runtime: POST slash agents slash execute returns 202 async and writes to Memgraph. Nango is the integration layer that makes data ingestion tractable. Seven hundred plus connectors, hosted OAuth flows, token lifecycle management, bulk historical sync, incremental updates. Self-hosted on Cloud Run. On model tiers: every query is routed to the cheapest model that can do the job well. Advisory and Executive get Premium because the decisions are high-stakes. VPs get Standard with Router boost to Premium for complex cases. Production agents mostly run Standard. Batch and template work runs on Budget. This is how the unit economics work at scale.",
+  "Static AI tools hit a ceiling fast. Once you build a prompt, it works or it doesn't. There is no path to better. JP's architecture is different. Three learning patterns work together to make the system smarter every day. This is what the MIT NANDA report on the 95 percent failure rate was pointing at. Most enterprise AI tools do not learn. Ours do. Hermes is the reinforcement learning loop. Every agent action is stored in Memgraph as an AgentAction node. When the outcome is observed, an Outcome node is linked and a LearningSignal with a reward score is generated. Four reward sources with defined weights: human approval 0.4, task outcome 0.3, metric change 0.2, peer feedback 0.1. Over time, each agent learns what its humans want. Paperclip is inter-agent coordination. Agents do not free-form chat. They communicate through five canonical message types: status update, escalation, approval request, governance violation, collaboration query. Every message has required fields, a confidence score, and a logged outcome. This is how 82 agents can work together without turning into chaos. Autoresearch is recursive self-improvement. Karpathy-inspired. An agent notices a pattern, forms a hypothesis, backtests against historical cases from Memgraph, proposes the change to its manager. If approved, the change is deployed and monitored for 20 live actions. Learning is continuous but governed. Skill crystallization is how individual learning becomes system-wide learning. When an agent has an approach that achieves 80 percent plus approval on 20 plus instances, the Quality Sentinel detects the pattern and the Knowledge Curator extracts it into a structured, reusable skill. Cross-department skills get promoted. Commercially, this is the technical foundation of the flywheel on slide 13. Engagement one gets adequate agents. Engagement five gets agents with crystallized skills from engagement one. Engagement ten gets agents that proactively propose improvements. Governance is critical. Agents do not self-modify without approval. Every hypothesis, backtest, and change is logged. The only way to trust a self-improving system is to watch it improve in the open.",
+  "The platform is the engine. Capabilities are what it powers. A capability is a business function we redesign from first principles, deploy alongside humans, and operate on behalf of the client. Eight capabilities surfaced during discovery at Safe Life. They map to the core operating motions of a life insurance agency. We are starting with two. Sales and Closing. Agent Performance Management. Two reasons. They control top-line revenue. The twenty-seven to thirty thousand dollar per month gap between top and bottom agents at Safe Life is the specific problem these two close. And they generate the richest operational signal. Every call is a data point. More calls, smarter engine, faster. Three principles govern every capability. Independent, meaning each one deploys on its own. Productized, built once at the first client and reused at every client after. Operated, meaning we do not hand it off. We run it. Each capability is a product line. The platform is what makes them repeatable. This is how Peach Pilot expands: one vertical at a time, one capability at a time, always on the same foundation.",
+  "So how does an engagement actually run. First we learn your business. Then we transform it. Phase one, weeks one through six. We connect to your systems: CRM, email, calls, calendar, documents, chat. We configure the Brain, loaded with your company, domain, operational, strategic, and market context. Then we deliver a Company X-Ray. A detailed analysis of your operations in plain language with visual dashboards. You see what is broken, backed by your own data. For our first insurance client this looked like: which agents are underperforming and why, which carrier applications are being declined unnecessarily, which leads are being ignored, where the biggest revenue is hiding. Phase two begins at week six. We deploy agents from our prebuilt library. No custom development per client. The full hierarchy is on slide five: Advisory, Executive, Business Function, Production, and Meta layers, all pre-configured to work together. Humans validate every step. Governance built in from day one. And it gets smarter over time. Every decision, signal, and outcome feeds back into the Brain via the learning loops on slide six. The sequencing is the methodology. Data first. Insights second. Agents third. Every time. That sequencing is why our transformations land where others stall.",
+  "This slide is the commercial thesis of the entire company. We get paid when your numbers move. Three components. Transformation Fee: upfront and fixed scope, covers Discovery, Brain build, X-Ray, and the first capability redesign. Managed Operations Retainer: monthly and recurring, we run the capability in production: monitoring, audits, tuning, escalations. Performance Component: outcome-based, tied to measurable improvements over baseline. Close rate up. Chargebacks down. Ramp time faster. Retention higher. Consulting firms sell hours. They have no skin in the outcome. Software companies sell licenses. They do not operate the capability. We do both. We build it, run it, and get paid on the result. This is also a moat. A consulting firm cannot match it without rebuilding their entire business. A software company cannot take on operational risk they are not built to carry. We chose this model on day one. Competitors trying to copy it have to dismantle theirs. If the system does not work, we do not eat.",
+  "Why insurance, why now. Because we have an unfair head start. Our co-founder JP James co-owns Safe Life Policy. Four hundred independent agents. Fifty carriers. A motivated CEO. Production access from day one. No cold outbound. The months of sales cycle competitors pay for, we skipped. This is a one-time structural advantage and we are going to use it. Beyond Safe Life, insurance is the right first vertical for three reasons. It is high-process. Repeatable workflows. Same motion every time. It is regulated. Governance becomes a feature, not friction. And the signal is rich. Every call recorded. Every outcome measured. The data flywheel spins faster here than in almost any other service business. The Safe Life gap is concrete. Twenty-seven to thirty thousand dollars per month between top and bottom agents on the same leads. Six months to ramp a new agent. These are numbers AI can move in the first ninety days. From life insurance we expand to Property and Casualty, Medical, Non-Standard Auto, and beyond. Same platform. Same methodology. New domain knowledge per vertical. One at a time, always on the same foundation.",
+  "Opening frame. If you read JP's PRD and my Strategic Architecture side by side, you might think they describe two different companies. They don't. JP built a horizontal AI platform. I built the go-to-market model to turn that platform into outcomes clients actually pay for. JP built the engine. I built the vehicle. Same company. Two angles. The shared bets are the key. Anyone reading both documents will notice the differences first. The similarities are more important. We both bet that context, not model quality, is the moat. We both bet that compounding knowledge is the engine of value. We both bet on humans in the loop, frontier models plus specialized reasoning, and outcomes over outputs. These are non-trivial bets. Most AI companies are making the opposite bet. The fact that JP and I independently converged on these principles is a signal that the principles are right. Why this matters for new hires. Most technology companies fail because they build an engine and never find the vehicle. Most services companies fail because they have a vehicle but no engine. Peach Pilot has both because JP and I each owned one side. If you are on the platform team, JP's technical work is closer to your daily work. If you are on the transformation or operations team, the AINS delivery model is closer. Everyone at Peach Pilot needs to understand both.",
+  "This slide exists to answer a specific question new hires always ask: how does JP's PRD relate to what we're actually doing? The answer is in the mapping table. Every technical component JP specified shows up somewhere in the AINS delivery model. The platform and the delivery model are not separate things. They are the same thing described at different altitudes. The Context Graph becomes the Knowledge Library. JP built it on Memgraph with learning loops layered in. That graph is the storage layer of the Company Brain. The two-tier agent model becomes the Reasoning Engine. Orchestrator instances that maintain long-running context plus specialist sub-agents spun up for discrete tasks. Same architecture, expressed in business terms. The Expert Agent Library is literally the same thing in both documents. JP built it at Hive. It becomes one of the six components of the Knowledge Library at Peach Pilot. Confidence-based HITL becomes our governance framework. A five-tier confidence system with permission calibration, anti-annoyance batching, and audit logging. Real-world action bridge is the execution surface for capabilities. The saga pattern for atomic multi-service actions. That is exactly what enables a capability to execute across the client's tools. Why this framing matters internally. If the team reads JP's PRD and thinks that is what we are building, then reads the strategy and thinks that is what we are selling, they will see a split-brain company. It is not split. JP specified the engine. The strategy specified the vehicle.",
+  "Two reasons we win. The flywheel and the team. Every engagement makes the next one better. Engagement one is built from scratch, consulting-heavy. Engagement five, Discovery is partially automated, delivery is forty percent faster. Engagement ten, most work is configuration instead of construction. Margins expand. This is not a marketing moat. It is a math moat. The second insurance agency inherits everything we learned at the first. A competitor starting fresh at engagement one is permanently behind. The team gives us the shot. Mario Montag, CEO. Co-founded Predikto, enterprise ML, exited to a Fortune 50. Thirteen years at McKinsey, PwC, Hitachi. This is the second time building and scaling an enterprise AI company. JP James, Chairman. Chairman of Hive Financial Assets. US patent holder in AI and ML. Georgia TITAN 100. Teaches AI at Georgia Tech. Ben Lull, CTO. Runs platform, builds the Brain, makes the methodology repeatable. Investors take the meeting, clients take the pilot, and senior hires take the offer because of who is in the room. The flywheel gives us the economics. The team gives us the shot. Welcome to Peach Pilot."
+]
+</script>
+</head>
+<body>
+
+<deck-stage width="1920" height="1080">
+
+  <!-- 0 — Cover -->
+  <!-- 0 — Cover (Type only) -->
+  <section data-label="00 Cover" style="background:var(--navy);">
+    <div class="cover" style="color:#fff; grid-template-rows: auto 1fr auto; row-gap: 48px;">
+      <div class="cover-mark" style="gap: 18px;">
+        <span style="color:#fff; font-weight:400; letter-spacing:-0.02em; font-family:'DM Sans',sans-serif; font-size:44px;">Peach <b style="font-weight:700;">Pilot</b></span>
+        <img src="assets/peach-pilot-icon.svg" alt="" style="width:68px; height:auto; display:block; filter: brightness(0) saturate(100%) invert(68%) sepia(30%) saturate(1200%) hue-rotate(330deg) brightness(100%) contrast(92%);">
+      </div>
+
+      <h1 style="font-family:'DM Sans',sans-serif; font-size:124px; font-weight:400; line-height:0.98; letter-spacing:-0.035em; color:#fff; align-self:center; margin:0; text-wrap:balance; max-width:1500px;">
+        Build the foundation.<br/>
+        Redesign the work.<br/>
+        <span style="color:var(--salmon);">Own the outcome.</span>
+      </h1>
+
+      <div class="cover-meta">
+        <span>Internal Product Vision</span>
+        <span>April 2026</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1 — The Problem -->
+  <section data-label="01 The Problem" style="background:var(--cream);">
+    <div class="frame frame-cream">
+      <div class="chrome">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>01 / The Problem</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 5fr 7fr; gap: 96px; flex:1; align-items:start; margin-top: 32px;">
+        <div>
+          <h2 class="h-title" style="font-size: 84px; max-width: 720px;">
+            Most AI transformations are built on a foundation that can't hold them.
+          </h2>
+
+          <div style="margin-top: 64px;">
+            <div style="font-family:'DM Sans'; font-size: 280px; font-weight:400; line-height:.85; letter-spacing:-.05em; color: var(--salmon);">95%</div>
+            <p class="t-body" style="max-width: 520px; margin-top: 20px; color: var(--navy);">
+              of enterprise AI pilots deliver no measurable business impact.
+            </p>
+            <div class="cite" style="margin-top: 16px;">MIT NANDA, 2025</div>
+          </div>
+        </div>
+
+        <div style="padding-top: 96px;">
+          <div class="pill" style="margin-bottom: 28px;">Three reasons they fail</div>
+          <ol class="num-list">
+            <li class="num-item">
+              <div class="num-badge">01</div>
+              <div class="num-body">
+                <h3>The Learning Gap</h3>
+                <p>AI tools forget context between sessions, don't retain feedback, and sit outside the systems where work happens. MIT: the core barrier to scaling is not infrastructure or talent. It is learning.</p>
+              </div>
+            </li>
+            <li class="num-item">
+              <div class="num-badge">02</div>
+              <div class="num-body">
+                <h3>Poor Data Foundations</h3>
+                <p>AI amplifies bad data, it doesn't fix it. Gartner: 60% of AI projects will be abandoned through 2026 due to poor data quality.</p>
+              </div>
+            </li>
+            <li class="num-item">
+              <div class="num-badge">03</div>
+              <div class="num-body">
+                <h3>Human Workflows, Automated</h3>
+                <p>Processes designed for people, wrapped in AI instead of redesigned for it. Consultants spend more than 60% of their time gathering information, not solving problems.</p>
+              </div>
+            </li>
+          </ol>
+
+          <p class="closer-light" style="margin-top: 56px;">
+            Leaders are stuck, afraid, and don't know where to start.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 — The Solution -->
+  <section data-label="02 The Solution" style="background:var(--navy);">
+    <div class="frame frame-dark" style="position:relative; overflow:hidden;">
+      <!-- Decorative brand watermark -->
+      <div aria-hidden="true" style="position:absolute; right:-200px; bottom:-260px; width:900px; height:900px; pointer-events:none; opacity:0.055; z-index:0;">
+        <img src="assets/peach-pilot-icon.svg" alt="" style="width:100%; height:100%; object-fit:contain; filter: brightness(0) saturate(100%) invert(68%) sepia(30%) saturate(1200%) hue-rotate(330deg) brightness(100%) contrast(92%);">
+      </div>
+      <!-- Soft salmon radial glow behind headline -->
+      <div aria-hidden="true" style="position:absolute; left:-100px; top:-100px; width:700px; height:700px; border-radius:50%; background: radial-gradient(circle at center, rgba(228,124,100,0.18) 0%, rgba(228,124,100,0.0) 60%); pointer-events:none; z-index:0;"></div>
+
+      <div class="chrome" style="z-index:2;">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>02 / The Solution</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 56px; max-width: 1200px; position:relative; z-index:2;">
+        <h2 class="h-title" style="color:#fff; font-size: 80px;">
+          Build the foundation first. Then redesign the work on top of it.
+        </h2>
+        <p class="h-subtitle" style="margin-top: 28px; max-width: 1000px;">
+          A Company Brain that makes your business legible to AI, paired with humans in the loop who own the outcome.
+        </p>
+      </div>
+
+      <div style="flex:1; display:flex; align-items:end; position:relative; z-index:2;">
+        <div class="solution-grid">
+          <div class="sol-col">
+            <div class="num">01</div>
+            <h3>Learns your company.</h3>
+            <p>Your workflows, data, people, and context. Captured in one system that compounds over time. Nothing walks out the door.</p>
+          </div>
+          <div class="sol-col">
+            <div class="num">02</div>
+            <h3>Unifies raw and human context.</h3>
+            <p>700+ integrations live. Gmail, Outlook, Slack, Teams, JIRA, Confluence, Asana, Salesforce, and more. Structured data and human context unified in one foundation agents can reason over.</p>
+          </div>
+          <div class="sol-col">
+            <div class="num">03</div>
+            <h3>Redesigns workflows from first principles.</h3>
+            <p>Every capability rebuilt around what AI plus humans can do together. Agents deployed into processes designed for them.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 — The Platform -->
+  <section data-label="03 The Platform" style="background:var(--navy);">
+    <div class="frame frame-dark">
+      <div class="chrome">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>03 / The Platform &middot; Company Brain</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 24px; display:grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end;">
+        <h2 class="h-title" style="color:#fff; font-size: 54px;">Two layers.<br/>One foundation.</h2>
+        <p class="h-subtitle" style="max-width: 640px; padding-bottom: 8px; font-size: 28px;">
+          The Knowledge Library stores what the company knows. The Reasoning Engine decides what to do about it.
+        </p>
+      </div>
+
+      <div class="twin" style="margin-top: 32px;">
+        <div class="twin-panel">
+          <div class="tag">Storage Layer</div>
+          <h3>Knowledge Library</h3>
+          <p class="sub">Six types of information that make the business legible to AI.</p>
+          <ul class="lib-list" style="margin-top: 4px;">
+            <li><span class="k">01</span><div><div class="n">Company Knowledge</div></div></li>
+            <li><span class="k">02</span><div><div class="n">Domain Knowledge</div></div></li>
+            <li><span class="k">03</span><div><div class="n">Operational Signal</div></div></li>
+            <li><span class="k">04</span><div><div class="n">Strategic Context</div></div></li>
+            <li><span class="k">05</span><div><div class="n">Market Intelligence</div></div></li>
+            <li><span class="k">06</span><div><div class="n">Expert Agent Library</div></div></li>
+          </ul>
+        </div>
+
+        <div class="twin-panel">
+          <div class="tag">Computation Layer</div>
+          <h3>Reasoning Engine</h3>
+          <p class="sub">Two modes that turn knowledge into decisions.</p>
+
+          <div class="re-mode" style="margin-top: 12px;">
+            <div class="dot">S</div>
+            <div>
+              <h4>Strategic Reasoning</h4>
+              <p>High stakes, deliberative. Humans approve every action.</p>
+            </div>
+          </div>
+          <div class="re-mode">
+            <div class="dot">O</div>
+            <div>
+              <h4>Operational Reasoning</h4>
+              <p>Fast, continuous, pattern matching. Humans review exceptions.</p>
+            </div>
+          </div>
+
+          <div style="margin-top: auto; padding-top: 20px;">
+            <p style="font-family:'Inter'; font-size: 24px; color: var(--gray-light); line-height: 1.4; margin:0;">
+              Day one the engine is thin. As signal accumulates, it learns to predict which agent-lead pairings close.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <p class="closer" style="margin-top: 40px; max-width: none; border-top: none; padding-top: 0;">
+        Every capability we build runs on this foundation.
+      </p>
+    </div>
+  </section>
+
+  <!-- 4 — The Agent Hierarchy -->
+  <section data-label="04 The Agent Hierarchy" style="background:var(--navy);">
+    <div class="frame frame-dark">
+      <div class="chrome">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>04 / The Agent Hierarchy</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 32px; display:grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items:end;">
+        <h2 class="h-title" style="color:#fff; font-size: 64px;">
+          <span style="color: var(--salmon);">82 agents.</span><br/>Organized like a company.
+        </h2>
+        <p class="h-subtitle" style="padding-bottom: 4px; font-size: 28px;">
+          Five layers with bounded autonomy calibrated to risk. Each agent has a role, a model tier, and a human oversight model.
+        </p>
+      </div>
+
+      <div style="margin-top: 44px; flex:1; display:flex; flex-direction:column;">
+        <div style="display:grid; grid-template-columns: 200px 90px 1fr 1fr; gap: 24px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.14);">
+          <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--gray-light);">Layer</div>
+          <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--gray-light); text-align:right;">Count</div>
+          <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--gray-light);">Role</div>
+          <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--gray-light);">Oversight</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 200px 90px 1fr 1fr; gap: 24px; padding: 22px 0; border-bottom: 1px solid rgba(255,255,255,0.10); align-items: center;">
+          <div style="font-family:'DM Sans'; font-size:28px; font-weight:500; color: var(--salmon); letter-spacing:-.01em;">Advisory</div>
+          <div style="font-family:'DM Sans'; font-size:40px; font-weight:400; color:#fff; text-align:right; line-height:1;">8</div>
+          <div style="font-family:'Inter'; font-size:20px; color: var(--gray-light); line-height:1.4;">Strategic counsel on specialized domains. Recommend only, never act.</div>
+          <div style="font-family:'Inter'; font-size:20px; color: var(--gray-light); line-height:1.4;">On-demand consultation</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 200px 90px 1fr 1fr; gap: 24px; padding: 22px 0; border-bottom: 1px solid rgba(255,255,255,0.10); align-items: center;">
+          <div style="font-family:'DM Sans'; font-size:28px; font-weight:500; color: var(--salmon); letter-spacing:-.01em;">Executive</div>
+          <div style="font-family:'DM Sans'; font-size:40px; font-weight:400; color:#fff; text-align:right; line-height:1;">5</div>
+          <div style="font-family:'Inter'; font-size:20px; color: var(--gray-light); line-height:1.4;">C-suite decision-making, cross-functional coordination.</div>
+          <div style="font-family:'Inter'; font-size:20px; color: var(--gray-light); line-height:1.4;">Board approval for major decisions</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 200px 90px 1fr 1fr; gap: 24px; padding: 22px 0; border-bottom: 1px solid rgba(255,255,255,0.10); align-items: center;">
+          <div style="font-family:'DM Sans'; font-size:28px; font-weight:500; color: var(--salmon); letter-spacing:-.01em;">Business Function</div>
+          <div style="font-family:'DM Sans'; font-size:40px; font-weight:400; color:#fff; text-align:right; line-height:1;">13</div>
+          <div style="font-family:'Inter'; font-size:20px; color: var(--gray-light); line-height:1.4;">VP-level department leadership.</div>
+          <div style="font-family:'Inter'; font-size:20px; color: var(--gray-light); line-height:1.4;">Executive review</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 200px 90px 1fr 1fr; gap: 24px; padding: 22px 0; border-bottom: 1px solid rgba(255,255,255,0.10); align-items: center;">
+          <div style="font-family:'DM Sans'; font-size:28px; font-weight:500; color: var(--salmon); letter-spacing:-.01em;">Production</div>
+          <div style="font-family:'DM Sans'; font-size:40px; font-weight:400; color:#fff; text-align:right; line-height:1;">~50</div>
+          <div style="font-family:'Inter'; font-size:20px; color: var(--gray-light); line-height:1.4;">Individual contributor work.</div>
+          <div style="font-family:'Inter'; font-size:20px; color: var(--gray-light); line-height:1.4;">Manager review. Human in the loop for externals.</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 200px 90px 1fr 1fr; gap: 24px; padding: 22px 0; border-bottom: 1px solid rgba(255,255,255,0.10); align-items: center;">
+          <div style="font-family:'DM Sans'; font-size:28px; font-weight:500; color: var(--salmon); letter-spacing:-.01em;">Meta</div>
+          <div style="font-family:'DM Sans'; font-size:40px; font-weight:400; color:#fff; text-align:right; line-height:1;">9</div>
+          <div style="font-family:'Inter'; font-size:20px; color: var(--gray-light); line-height:1.4;">Platform operations: routing, security, governance, learning.</div>
+          <div style="font-family:'Inter'; font-size:20px; color: var(--gray-light); line-height:1.4;">Automated plus human audit</div>
+        </div>
+
+        <p class="closer" style="margin-top: auto; padding-top: 28px; max-width: none;">
+          Humans stay accountable for financial, legal, security, and customer-facing actions. Always. No exceptions based on confidence or track record.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 — The Platform Stack -->
+  <section data-label="05 The Platform Stack" style="background:var(--cream);">
+    <div class="frame frame-cream">
+      <div class="chrome">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>05 / The Platform Stack</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 32px; display:grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items:end;">
+        <h2 class="h-title" style="font-size: 64px;">Not a slide deck.<br/><span style="color: var(--salmon);">A running system.</span></h2>
+        <p class="h-subtitle" style="padding-bottom: 4px; font-size: 28px;">
+          Production infrastructure deployed on GCP, verified end to end, running today.
+        </p>
+      </div>
+
+      <div style="margin-top: 44px; display:grid; grid-template-columns: 1fr 1fr; gap: 80px; flex:1; align-items: start;">
+        <div>
+          <div class="pill" style="margin-bottom: 22px;">What's live</div>
+          <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column;">
+            <li style="display:grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 16px 0; border-top: 1px solid var(--gray-lighter); align-items:baseline;">
+              <div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color: var(--navy);">Memgraph</div>
+              <div style="font-family:'Inter'; font-size:18px; color: var(--gray); line-height:1.4;">Graph database for the Knowledge Library. Two GCE VMs. Cypher queries power context retrieval and agent reasoning.</div>
+            </li>
+            <li style="display:grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 16px 0; border-top: 1px solid var(--gray-lighter); align-items:baseline;">
+              <div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color: var(--navy);">Qdrant</div>
+              <div style="font-family:'Inter'; font-size:18px; color: var(--gray); line-height:1.4;">Vector database for semantic search and embeddings.</div>
+            </li>
+            <li style="display:grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 16px 0; border-top: 1px solid var(--gray-lighter); align-items:baseline;">
+              <div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color: var(--navy);">PCMS</div>
+              <div style="font-family:'Inter'; font-size:18px; color: var(--gray); line-height:1.4;">Personal Context Management Service on Cloud Run. FastAPI, v4.0.0.</div>
+            </li>
+            <li style="display:grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 16px 0; border-top: 1px solid var(--gray-lighter); align-items:baseline;">
+              <div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color: var(--navy);">Management API</div>
+              <div style="font-family:'Inter'; font-size:18px; color: var(--gray); line-height:1.4;">Tenant creation, API keys, JWT auth. Full chain verified on Cloud Run.</div>
+            </li>
+            <li style="display:grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 16px 0; border-top: 1px solid var(--gray-lighter); align-items:baseline;">
+              <div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color: var(--navy);">LiteLLM proxy</div>
+              <div style="font-family:'Inter'; font-size:18px; color: var(--gray); line-height:1.4;">Unified access to frontier models (Claude, GPT, Gemini).</div>
+            </li>
+            <li style="display:grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 16px 0; border-top: 1px solid var(--gray-lighter); align-items:baseline;">
+              <div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color: var(--navy);">Firebase dashboard</div>
+              <div style="font-family:'Inter'; font-size:18px; color: var(--gray); line-height:1.4;">OAuth working, multi-tenant isolated. 44 tests pass.</div>
+            </li>
+            <li style="display:grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 16px 0; border-top: 1px solid var(--gray-lighter); align-items:baseline;">
+              <div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color: var(--navy);">Agent runtime</div>
+              <div style="font-family:'Inter'; font-size:18px; color: var(--gray); line-height:1.4;">POST /agents/execute returns 202 async, writes to Memgraph.</div>
+            </li>
+            <li style="display:grid; grid-template-columns: 180px 1fr; gap: 24px; padding: 16px 0; border-top: 1px solid var(--gray-lighter); border-bottom: 1px solid var(--gray-lighter); align-items:baseline;">
+              <div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color: var(--navy);">Nango</div>
+              <div style="font-family:'Inter'; font-size:18px; color: var(--gray); line-height:1.4;">Self-hosted integration layer on Cloud Run with 700+ connectors.</div>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="pill" style="margin-bottom: 22px;">The model tier system</div>
+          <div style="display:flex; flex-direction:column; gap: 20px;">
+            <div style="background: var(--white); padding: 28px 32px; border: 1px solid var(--gray-lighter);">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; gap: 20px; margin-bottom: 10px;">
+                <div style="font-family:'DM Sans'; font-size:30px; font-weight:500; color: var(--salmon); letter-spacing:-.01em;">Premium</div>
+                <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--gray);">Advisory · Executive · Router · Security</div>
+              </div>
+              <div style="font-family:'Inter'; font-size:19px; color: var(--navy); line-height:1.4;">Claude Opus 4.6 · GPT-5.4 Thinking · Gemini 3.1 Pro</div>
+            </div>
+            <div style="background: var(--white); padding: 28px 32px; border: 1px solid var(--gray-lighter);">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; gap: 20px; margin-bottom: 10px;">
+                <div style="font-family:'DM Sans'; font-size:30px; font-weight:500; color: var(--salmon); letter-spacing:-.01em;">Standard</div>
+                <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--gray);">VPs · most Production agents</div>
+              </div>
+              <div style="font-family:'Inter'; font-size:19px; color: var(--navy); line-height:1.4;">Claude Sonnet 4.6 · GPT-5.4 · Gemini Flash</div>
+            </div>
+            <div style="background: var(--white); padding: 28px 32px; border: 1px solid var(--gray-lighter);">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; gap: 20px; margin-bottom: 10px;">
+                <div style="font-family:'DM Sans'; font-size:30px; font-weight:500; color: var(--salmon); letter-spacing:-.01em;">Budget</div>
+                <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--gray);">Batch · templates · notifications</div>
+              </div>
+              <div style="font-family:'Inter'; font-size:19px; color: var(--navy); line-height:1.4;">Claude Haiku 4.5 · GPT-4.1 · Gemini Flash</div>
+            </div>
+          </div>
+
+          <p class="closer-light" style="margin-top: 36px;">
+            Agents reason over real data in real infrastructure. Not mockups. Not diagrams. Production.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 — How the System Learns -->
+  <section data-label="06 How the System Learns" style="background:var(--navy);">
+    <div class="frame frame-dark">
+      <div class="chrome">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>06 / How the System Learns</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 32px; display:grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items:end;">
+        <h2 class="h-title" style="color:#fff; font-size: 60px;">Three patterns that make agents smarter over time.</h2>
+        <p class="h-subtitle" style="padding-bottom: 4px; font-size: 28px;">
+          The platform is not static. Every action generates a learning signal. Every successful pattern crystallizes into reusable knowledge.
+        </p>
+      </div>
+
+      <div style="margin-top: 48px; display:grid; grid-template-columns: repeat(3, 1fr); gap: 36px;">
+        <div style="background: var(--navy-2); padding: 36px 36px 32px; display:flex; flex-direction:column; gap: 14px;">
+          <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--salmon);">Pattern 01</div>
+          <h3 style="font-family:'DM Sans'; font-size:36px; font-weight:500; color:#fff; margin:0; letter-spacing:-.015em; line-height:1.1;">Hermes</h3>
+          <div style="font-family:'Inter'; font-size:18px; color: var(--salmon-soft); margin-top:-4px;">The reinforcement learning loop</div>
+          <p style="font-family:'Inter'; font-size:19px; line-height:1.5; color: var(--gray-light); margin: 12px 0 0;">
+            Every agent action produces an outcome. Every outcome produces a reward signal. Every signal updates the agent's behavior on the next heartbeat. Agents get better through repetition.
+          </p>
+          <div style="margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.12); display:grid; grid-template-columns: 1fr 1fr; gap: 12px 20px;">
+            <div><div style="font-family:'JetBrains Mono'; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color: var(--gray-light); margin-bottom:4px;">Human approval</div><div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color:#fff;">0.4</div></div>
+            <div><div style="font-family:'JetBrains Mono'; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color: var(--gray-light); margin-bottom:4px;">Task outcome</div><div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color:#fff;">0.3</div></div>
+            <div><div style="font-family:'JetBrains Mono'; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color: var(--gray-light); margin-bottom:4px;">Metric change</div><div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color:#fff;">0.2</div></div>
+            <div><div style="font-family:'JetBrains Mono'; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color: var(--gray-light); margin-bottom:4px;">Peer feedback</div><div style="font-family:'DM Sans'; font-size:22px; font-weight:500; color:#fff;">0.1</div></div>
+          </div>
+        </div>
+
+        <div style="background: var(--navy-2); padding: 36px 36px 32px; display:flex; flex-direction:column; gap: 14px;">
+          <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--salmon);">Pattern 02</div>
+          <h3 style="font-family:'DM Sans'; font-size:36px; font-weight:500; color:#fff; margin:0; letter-spacing:-.015em; line-height:1.1;">Paperclip</h3>
+          <div style="font-family:'Inter'; font-size:18px; color: var(--salmon-soft); margin-top:-4px;">Inter-agent coordination</div>
+          <p style="font-family:'Inter'; font-size:19px; line-height:1.5; color: var(--gray-light); margin: 12px 0 0;">
+            Agents collaborate through structured messages, not ad-hoc chat. Five canonical schemas govern the conversation. Coordination is deterministic and auditable.
+          </p>
+          <div style="margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.12); display:flex; flex-direction:column; gap: 8px;">
+            <div style="display:flex; align-items:baseline; gap: 14px;"><span style="font-family:'JetBrains Mono'; font-size:12px; color: var(--salmon); width: 22px;">01</span><span style="font-family:'Inter'; font-size:17px; color:#fff;">Status update</span></div>
+            <div style="display:flex; align-items:baseline; gap: 14px;"><span style="font-family:'JetBrains Mono'; font-size:12px; color: var(--salmon); width: 22px;">02</span><span style="font-family:'Inter'; font-size:17px; color:#fff;">Escalation</span></div>
+            <div style="display:flex; align-items:baseline; gap: 14px;"><span style="font-family:'JetBrains Mono'; font-size:12px; color: var(--salmon); width: 22px;">03</span><span style="font-family:'Inter'; font-size:17px; color:#fff;">Approval request</span></div>
+            <div style="display:flex; align-items:baseline; gap: 14px;"><span style="font-family:'JetBrains Mono'; font-size:12px; color: var(--salmon); width: 22px;">04</span><span style="font-family:'Inter'; font-size:17px; color:#fff;">Governance violation</span></div>
+            <div style="display:flex; align-items:baseline; gap: 14px;"><span style="font-family:'JetBrains Mono'; font-size:12px; color: var(--salmon); width: 22px;">05</span><span style="font-family:'Inter'; font-size:17px; color:#fff;">Collaboration query</span></div>
+          </div>
+        </div>
+
+        <div style="background: var(--navy-2); padding: 36px 36px 32px; display:flex; flex-direction:column; gap: 14px;">
+          <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--salmon);">Pattern 03</div>
+          <h3 style="font-family:'DM Sans'; font-size:36px; font-weight:500; color:#fff; margin:0; letter-spacing:-.015em; line-height:1.1;">Autoresearch</h3>
+          <div style="font-family:'Inter'; font-size:18px; color: var(--salmon-soft); margin-top:-4px;">Recursive self-improvement</div>
+          <p style="font-family:'Inter'; font-size:19px; line-height:1.5; color: var(--gray-light); margin: 12px 0 0;">
+            Agents hypothesize improvements to their own behavior, backtest against the knowledge graph, and propose changes to their manager. Learning is continuous but governed.
+          </p>
+          <div style="margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.12); display:flex; flex-direction:column; gap: 10px;">
+            <div style="display:grid; grid-template-columns: 26px 1fr; gap: 12px; align-items:baseline;"><span style="font-family:'JetBrains Mono'; font-size:13px; color: var(--salmon);">→</span><span style="font-family:'Inter'; font-size:17px; color:#fff; line-height:1.35;">Hypothesize an improvement</span></div>
+            <div style="display:grid; grid-template-columns: 26px 1fr; gap: 12px; align-items:baseline;"><span style="font-family:'JetBrains Mono'; font-size:13px; color: var(--salmon);">→</span><span style="font-family:'Inter'; font-size:17px; color:#fff; line-height:1.35;">Backtest against historical cases</span></div>
+            <div style="display:grid; grid-template-columns: 26px 1fr; gap: 12px; align-items:baseline;"><span style="font-family:'JetBrains Mono'; font-size:13px; color: var(--salmon);">→</span><span style="font-family:'Inter'; font-size:17px; color:#fff; line-height:1.35;">Propose to manager for approval</span></div>
+            <div style="display:grid; grid-template-columns: 26px 1fr; gap: 12px; align-items:baseline;"><span style="font-family:'JetBrains Mono'; font-size:13px; color: var(--salmon);">→</span><span style="font-family:'Inter'; font-size:17px; color:#fff; line-height:1.35;">Deploy and monitor 20 live actions</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 36px; padding: 24px 32px; background: rgba(240,138,106,0.08); border-left: 3px solid var(--salmon); display:flex; align-items:center; gap: 28px;">
+        <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--salmon); flex-shrink:0;">Skill crystallization</div>
+        <p style="font-family:'Inter'; font-size:20px; color: var(--gray-light); line-height:1.45; margin:0;">
+          When an agent's approach succeeds on <span style="color:#fff; font-weight:500;">20+ instances with an 80%+ approval rate</span>, the pattern is extracted into a reusable skill. Other agents inherit it. Cross-department skills get promoted by the Knowledge Curator.
+        </p>
+      </div>
+
+      <p class="closer" style="margin-top: auto; padding-top: 24px; max-width: none;">
+        Day one agents are adequate. Day 180 agents are expert. The system compounds.
+      </p>
+    </div>
+  </section>
+
+  <!-- 4 — The Capabilities -->
+  <section data-label="07 The Capabilities" style="background:var(--cream);">
+    <div class="frame frame-cream">
+      <div class="chrome">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>07 / The Capabilities</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 24px; display:grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items:end;">
+        <h2 class="h-title" style="font-size: 60px;">The platform is the engine. The capabilities are what it powers.</h2>
+        <p class="h-subtitle" style="padding-bottom: 4px; font-size: 26px;">
+          Independently deployable business functions, redesigned from first principles and operated as a service.
+        </p>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 6fr 6fr; gap: 56px; margin-top: 32px; flex:1; align-items: start;">
+        <div>
+          <div class="pill" style="margin-bottom: 16px;">Eight capabilities in insurance</div>
+          <div>
+            <div class="cap-row"><div class="cap-num">01</div><div class="cap-name-wrap"><div class="cap-name">Lead Acquisition &amp; Distribution</div></div></div>
+            <div class="cap-row active"><div class="cap-num">02</div><div class="cap-name-wrap"><div class="cap-name">Sales &amp; Closing</div><div class="cap-tag">Starting Scope</div></div></div>
+            <div class="cap-row active"><div class="cap-num">03</div><div class="cap-name-wrap"><div class="cap-name">Agent Performance Management</div><div class="cap-tag">Starting Scope</div></div></div>
+            <div class="cap-row"><div class="cap-num">04</div><div class="cap-name-wrap"><div class="cap-name">Policy Fulfillment</div></div></div>
+            <div class="cap-row"><div class="cap-num">05</div><div class="cap-name-wrap"><div class="cap-name">Commission Processing</div></div></div>
+            <div class="cap-row"><div class="cap-num">06</div><div class="cap-name-wrap"><div class="cap-name">Client Retention &amp; Relationship</div></div></div>
+            <div class="cap-row"><div class="cap-num">07</div><div class="cap-name-wrap"><div class="cap-name">Agent Recruitment &amp; Onboarding</div></div></div>
+            <div class="cap-row"><div class="cap-num">08</div><div class="cap-name-wrap"><div class="cap-name">Basic Back-Office</div></div></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="pill" style="margin-bottom: 16px;">Three principles</div>
+          <ol class="num-list">
+            <li class="num-item">
+              <div class="num-badge">01</div>
+              <div class="num-body">
+                <h3>Independent</h3>
+                <p>Each capability deploys on its own. No dependencies on the others. Clients can start small and layer in more over time.</p>
+              </div>
+            </li>
+            <li class="num-item">
+              <div class="num-badge">02</div>
+              <div class="num-body">
+                <h3>Productized</h3>
+                <p>Built once at the first client. Reused at every client after. By client ten, most work is configuration, not construction.</p>
+              </div>
+            </li>
+            <li class="num-item">
+              <div class="num-badge">03</div>
+              <div class="num-body">
+                <h3>Operated</h3>
+                <p>We do not hand the capability off. We run it. System monitoring, audits, tuning, escalations, Knowledge Library maintenance.</p>
+              </div>
+            </li>
+          </ol>
+          <p class="closer-light" style="margin-top: 28px; font-size: 24px; padding-top: 20px;">
+            Each capability is a product line. The platform makes them repeatable.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 — The Methodology -->
+  <section data-label="08 The Methodology" style="background:var(--white);">
+    <div class="frame">
+      <div class="chrome">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>08 / The Methodology</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 40px; display:grid; grid-template-columns: 1fr 1fr; gap: 96px; align-items:end;">
+        <h2 class="h-title">First we learn your business. Then we transform it.</h2>
+        <p class="h-subtitle" style="padding-bottom: 4px;">
+          A phase-gated methodology that makes the company legible to AI before we automate anything.
+        </p>
+      </div>
+
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap: 56px; margin-top: 48px;">
+        <div class="phase">
+          <div class="phase-label">
+            <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--salmon); margin-bottom: 14px;">Phase 01</div>
+            <div class="num">Learn the Business</div>
+            <div class="weeks">Weeks 1 → 6</div>
+          </div>
+          <div class="phase-steps">
+            <div class="step">
+              <div class="step-dot">01</div>
+              <h4>Your Data</h4>
+              <p>Connect to CRM, email, calls, calendar, documents, chat, reports, finance, HR, projects.</p>
+            </div>
+            <div class="step">
+              <div class="step-dot">02</div>
+              <h4>Configure the Brain</h4>
+              <p>Knowledge Library plus Reasoning Engine, loaded with your full context.</p>
+            </div>
+            <div class="step">
+              <div class="step-dot">03</div>
+              <h4>Company X-Ray</h4>
+              <p>A detailed analysis of your operations, delivered in plain language. You see what is broken.</p>
+            </div>
+          </div>
+        </div>
+
+        <hr class="rule" />
+
+        <div class="phase">
+          <div class="phase-label">
+            <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--salmon); margin-bottom: 14px;">Phase 02</div>
+            <div class="num">Transform the Work</div>
+            <div class="weeks">Week 6 →</div>
+          </div>
+          <div class="phase-steps">
+            <div class="step">
+              <div class="step-dot">04</div>
+              <h4>Agents, Prebuilt</h4>
+              <p>Deployed from our prebuilt library. No custom development per client. See slide 05 for the full hierarchy.</p>
+            </div>
+            <div class="step">
+              <div class="step-dot">05</div>
+              <h4>Humans Validate Every Step</h4>
+              <p>Governance built in from day one. Strategic decisions approved. Exceptions always reviewed.</p>
+            </div>
+            <div class="step">
+              <div class="step-dot">06</div>
+              <h4>Gets Smarter Over Time</h4>
+              <p>Every decision, signal, and outcome feeds back into the Brain.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="closer-light" style="margin-top: 24px;">
+        Data first. Insights second. Agents third. Every time.
+      </p>
+    </div>
+  </section>
+
+  <!-- 6 — The Commercial Model -->
+  <section data-label="09 The Commercial Model" style="background:var(--navy);">
+    <div class="frame frame-dark">
+      <div class="chrome">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>09 / The Commercial Model</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 48px; display:grid; grid-template-columns: 1fr 1fr; gap: 96px; align-items:end;">
+        <h2 class="h-title" style="color:#fff;">We get paid when your numbers move.</h2>
+        <p class="h-subtitle" style="padding-bottom: 4px;">
+          A commercial model built around shared outcomes, not licensed software or billable hours.
+        </p>
+      </div>
+
+      <div class="rev-grid" style="margin-top: 36px;">
+        <div class="rev-card">
+          <div class="tag">01 &middot; Upfront</div>
+          <h3>Transformation Fee</h3>
+          <div class="billing">Fixed scope, project-based</div>
+          <p>Covers Discovery, Company Brain build, X-Ray, and the first capability redesign.</p>
+        </div>
+        <div class="rev-card">
+          <div class="tag">02 &middot; Recurring</div>
+          <h3>Managed Operations Retainer</h3>
+          <div class="billing">Monthly, per active capability</div>
+          <p>We run the capability in production. Monitoring, audits, tuning, escalations, Knowledge Library maintenance.</p>
+        </div>
+        <div class="rev-card" style="background: var(--salmon); color: var(--navy);">
+          <div class="tag" style="color: var(--navy);">03 &middot; Outcome</div>
+          <h3 style="color: var(--navy);">Performance Component</h3>
+          <div class="billing" style="color: var(--navy); opacity:.75;">Tied to measurable improvement</div>
+          <p style="color: var(--navy);">Close rate up. Chargebacks down. Ramp time faster. Retention higher. Layered in 90 days after deployment.</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 32px;">
+        <div class="cmp">
+          <div class="cmp-cell head">Model</div>
+          <div class="cmp-cell head">What they sell</div>
+          <div class="cmp-cell head">Skin in the outcome</div>
+
+          <div class="cmp-cell label">Consulting firms</div>
+          <div class="cmp-cell">Hours</div>
+          <div class="cmp-cell">None. Incentive is to extend the engagement.</div>
+
+          <div class="cmp-cell label">Software companies</div>
+          <div class="cmp-cell">Licenses &amp; seats</div>
+          <div class="cmp-cell">None. They do not operate the capability.</div>
+
+          <div class="cmp-cell label us" style="font-family:'DM Sans'; font-size: 20px; letter-spacing:-.005em; text-transform:none; color: var(--salmon);">Peach Pilot</div>
+          <div class="cmp-cell us">The capability, built and operated</div>
+          <div class="cmp-cell us">Paid on the result.</div>
+        </div>
+      </div>
+
+      <p class="closer" style="margin-top: 24px; padding-top: 18px;">
+        If the system does not work, we do not eat.
+      </p>
+    </div>
+  </section>
+
+  <!-- 7 — The Wedge (Why insurance, why now) -->
+  <section data-label="10 The Wedge" style="background:var(--cream);">
+    <div class="frame frame-cream">
+      <div class="chrome">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>10 / The Wedge &middot; Why Insurance</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 40px; display:grid; grid-template-columns: 6fr 6fr; gap: 56px; align-items:end;">
+        <h2 class="h-title">We start in insurance because we have an unfair head start.</h2>
+        <p class="h-subtitle" style="padding-bottom: 4px;">
+          Our co-founder owns the first client. That changes the entire sales cycle.
+        </p>
+      </div>
+
+      <div class="wedge-grid" style="margin-top: 36px;">
+        <div class="wedge-panel">
+          <div class="lbl">The wedge client</div>
+          <div class="big">Safe Life Policy</div>
+          <p style="font-family:'Inter'; font-size: 22px; line-height:1.45; margin:0; max-width: 640px;">
+            Life insurance agency. Production access from day one. Live calls, real agents, actual chargebacks, motivated CEO. No cold outbound.
+          </p>
+          <div class="kv">
+            <div>
+              <span class="k">Agents</span>
+              <span class="v">400 independent</span>
+            </div>
+            <div>
+              <span class="k">Carriers</span>
+              <span class="v">50</span>
+            </div>
+            <div>
+              <span class="k">Co-owner</span>
+              <span class="v">JP James, Chairman</span>
+            </div>
+            <div>
+              <span class="k">CEO</span>
+              <span class="v">Mike Killimett</span>
+            </div>
+            <div>
+              <span class="k">Access</span>
+              <span class="v">Production, day one</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap: 32px;">
+          <div class="pill">Why insurance first</div>
+
+          <div>
+            <div style="font-family:'DM Sans'; font-size: 48px; font-weight:500; letter-spacing:-.02em; color: var(--salmon); line-height: 1.05;">High-process vertical.</div>
+            <p class="t-small" style="margin-top:10px;">Repeatable workflows. Regulated environment. Rich operational signal.</p>
+          </div>
+          <div>
+            <div style="font-family:'DM Sans'; font-size: 48px; font-weight:500; letter-spacing:-.02em; color: var(--salmon); line-height: 1;">$27–30K</div>
+            <p class="t-small" style="margin-top:10px;">Monthly gap between top and bottom agents on the same leads. A measurable target for the first 90 days.</p>
+          </div>
+          <div>
+            <div style="font-family:'DM Sans'; font-size: 48px; font-weight:500; letter-spacing:-.02em; color: var(--salmon); line-height: 1;">6 months</div>
+            <p class="t-small" style="margin-top:10px;">To ramp a new agent today. The onboarding gap AI closes first.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: auto; margin-bottom: 28px; padding-top: 30px; display:flex; flex-direction: column; gap: 14px; align-items: center; text-align: center;">
+        <div style="font-family:'JetBrains Mono'; font-size: 18px; letter-spacing:.14em; text-transform:uppercase; color: var(--gray);">Where this goes next</div>
+        <div class="verticals" style="justify-content: center;">
+          <span class="vchip current">Life Insurance</span>
+          <span class="vchip-arrow">→</span>
+          <span class="vchip">Property &amp; Casualty</span>
+          <span class="vchip-arrow">→</span>
+          <span class="vchip">Medical</span>
+          <span class="vchip-arrow">→</span>
+          <span class="vchip">Non-Standard Auto</span>
+          <span class="vchip-arrow">→</span>
+          <span class="vchip">Other Service Verticals</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7a — Two Builders, One Company -->
+  <section data-label="11 Two Builders" style="background:var(--navy);">
+    <div class="frame frame-dark" style="position:relative; overflow:hidden;">
+      <!-- Decorative brand watermark -->
+      <div aria-hidden="true" style="position:absolute; right:-200px; bottom:-260px; width:900px; height:900px; pointer-events:none; opacity:0.055; z-index:0;">
+        <img src="assets/peach-pilot-icon.svg" alt="" style="width:100%; height:100%; object-fit:contain; filter: brightness(0) saturate(100%) invert(68%) sepia(30%) saturate(1200%) hue-rotate(330deg) brightness(100%) contrast(92%);">
+      </div>
+
+      <div class="chrome" style="z-index:2;">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>11 / Two Builders, One Company</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 48px; display:grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items:end; position:relative; z-index:2;">
+        <h2 class="h-title" style="color:#fff; font-size: 68px;">
+          JP built the engine.<br/><span style="color: var(--salmon);">Mario built the vehicle.</span>
+        </h2>
+        <p class="h-subtitle" style="padding-bottom: 8px; font-size: 28px;">
+          JP built a horizontal AI platform. Mario uses it to deliver AI Native Services outcomes to companies.
+        </p>
+      </div>
+
+      <div style="margin-top: 48px; position:relative; z-index:2;">
+        <div class="pill" style="margin-bottom: 28px;">What we share</div>
+        <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap: 36px;">
+          <div>
+            <div style="font-family:'DM Sans'; font-size:48px; font-weight:400; color: var(--salmon); line-height: 1; letter-spacing:-.02em; margin-bottom: 18px;">01</div>
+            <h3 style="font-family:'DM Sans'; font-size:28px; font-weight:500; color:#fff; letter-spacing:-.01em; margin:0 0 12px; line-height:1.2;">Context is the moat.</h3>
+            <p style="font-family:'Inter'; font-size:20px; line-height:1.45; color: var(--gray-light); margin:0;">As models commoditize, the winner has the deepest understanding of the client. Not the best model. The best context.</p>
+          </div>
+          <div>
+            <div style="font-family:'DM Sans'; font-size:48px; font-weight:400; color: var(--salmon); line-height: 1; letter-spacing:-.02em; margin-bottom: 18px;">02</div>
+            <h3 style="font-family:'DM Sans'; font-size:28px; font-weight:500; color:#fff; letter-spacing:-.01em; margin:0 0 12px; line-height:1.2;">Knowledge compounds.</h3>
+            <p style="font-family:'Inter'; font-size:20px; line-height:1.45; color: var(--gray-light); margin:0;">A persistent graph that learns and remembers. Not a chatbot that forgets. Not a tool that resets.</p>
+          </div>
+          <div>
+            <div style="font-family:'DM Sans'; font-size:48px; font-weight:400; color: var(--salmon); line-height: 1; letter-spacing:-.02em; margin-bottom: 18px;">03</div>
+            <h3 style="font-family:'DM Sans'; font-size:28px; font-weight:500; color:#fff; letter-spacing:-.01em; margin:0 0 12px; line-height:1.2;">Humans in the loop.</h3>
+            <p style="font-family:'Inter'; font-size:20px; line-height:1.45; color: var(--gray-light); margin:0;">Governance is structural, not cosmetic. Every agent action auditable. Every high-stakes decision needs a human.</p>
+          </div>
+          <div>
+            <div style="font-family:'DM Sans'; font-size:48px; font-weight:400; color: var(--salmon); line-height: 1; letter-spacing:-.02em; margin-bottom: 18px;">04</div>
+            <h3 style="font-family:'DM Sans'; font-size:28px; font-weight:500; color:#fff; letter-spacing:-.01em; margin:0 0 12px; line-height:1.2;">Frontier on top, specialized underneath.</h3>
+            <p style="font-family:'Inter'; font-size:20px; line-height:1.45; color: var(--gray-light); margin:0;">Claude and GPT for reasoning. Our own graph, our own agents, our own methodology for everything around them.</p>
+          </div>
+          <div>
+            <div style="font-family:'DM Sans'; font-size:48px; font-weight:400; color: var(--salmon); line-height: 1; letter-spacing:-.02em; margin-bottom: 18px;">05</div>
+            <h3 style="font-family:'DM Sans'; font-size:28px; font-weight:500; color:#fff; letter-spacing:-.01em; margin:0 0 12px; line-height:1.2;">Outcomes over outputs.</h3>
+            <p style="font-family:'Inter'; font-size:20px; line-height:1.45; color: var(--gray-light); margin:0;">Do not just generate a deck. Execute the follow-ups. Run the capability. Own the result.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="closer" style="margin-top: auto; padding-top: 36px; max-width: 1200px; position:relative; z-index:2;">
+        The engine without the vehicle never gets to market. The vehicle without the engine cannot move.
+      </p>
+    </div>
+  </section>
+
+  <!-- 7b — How the Platform Fits the Strategy -->
+  <section data-label="12 Platform Fits Strategy" style="background:var(--cream);">
+    <div class="frame frame-cream">
+      <div class="chrome">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>12 / How the Platform Fits the Strategy</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 48px; display:grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items:end;">
+        <h2 class="h-title" style="font-size: 68px;">The engine and the vehicle.</h2>
+        <p class="h-subtitle" style="padding-bottom: 8px; font-size: 28px;">
+          Every component JP specified maps into the Company Brain architecture we deploy at clients.
+        </p>
+      </div>
+
+      <div style="margin-top: 40px; display:grid; grid-template-columns: 1fr 1fr; gap: 80px; flex:1; align-items: start;">
+        <div style="max-width: 640px;">
+          <div class="pill" style="margin-bottom: 18px;">The mapping</div>
+          <div style="border-top: 1px solid var(--gray-lighter);">
+            <div style="display:grid; grid-template-columns: 1fr 40px 1fr; gap: 24px; padding: 14px 0; border-bottom: 1px solid var(--gray-lighter); align-items: baseline;">
+              <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--gray);">Platform · JP's PRD</div>
+              <div></div>
+              <div style="font-family:'JetBrains Mono'; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color: var(--gray);">Delivery Model · Strategy</div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 40px 1fr; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--gray-lighter); align-items: center;">
+              <div style="font-family:'DM Sans'; font-size:26px; font-weight:500; color: var(--navy); letter-spacing:-.01em;">Context Graph<div style="font-family:'Inter'; font-size:18px; font-weight:400; color: var(--gray); margin-top: 4px;">Memgraph, learning loops</div></div>
+              <div style="font-family:'DM Sans'; font-size:28px; color: var(--salmon); text-align:center;">→</div>
+              <div style="font-family:'DM Sans'; font-size:26px; font-weight:500; color: var(--navy); letter-spacing:-.01em;">Knowledge Library<div style="font-family:'Inter'; font-size:18px; font-weight:400; color: var(--gray); margin-top: 4px;">Storage layer</div></div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 40px 1fr; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--gray-lighter); align-items: center;">
+              <div style="font-family:'DM Sans'; font-size:26px; font-weight:500; color: var(--navy); letter-spacing:-.01em;">Two-tier agent model</div>
+              <div style="font-family:'DM Sans'; font-size:28px; color: var(--salmon); text-align:center;">→</div>
+              <div style="font-family:'DM Sans'; font-size:26px; font-weight:500; color: var(--navy); letter-spacing:-.01em;">Reasoning Engine<div style="font-family:'Inter'; font-size:18px; font-weight:400; color: var(--gray); margin-top: 4px;">Strategic + Operational</div></div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 40px 1fr; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--gray-lighter); align-items: center;">
+              <div style="font-family:'DM Sans'; font-size:26px; font-weight:500; color: var(--navy); letter-spacing:-.01em;">Expert Agent Library<div style="font-family:'Inter'; font-size:18px; font-weight:400; color: var(--gray); margin-top: 4px;">Built at Hive</div></div>
+              <div style="font-family:'DM Sans'; font-size:28px; color: var(--salmon); text-align:center;">→</div>
+              <div style="font-family:'DM Sans'; font-size:26px; font-weight:500; color: var(--navy); letter-spacing:-.01em;">Expert Agent Library<div style="font-family:'Inter'; font-size:18px; font-weight:400; color: var(--gray); margin-top: 4px;">Library component</div></div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 40px 1fr; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--gray-lighter); align-items: center;">
+              <div style="font-family:'DM Sans'; font-size:26px; font-weight:500; color: var(--navy); letter-spacing:-.01em;">Confidence-based HITL</div>
+              <div style="font-family:'DM Sans'; font-size:28px; color: var(--salmon); text-align:center;">→</div>
+              <div style="font-family:'DM Sans'; font-size:26px; font-weight:500; color: var(--navy); letter-spacing:-.01em;">Governance framework</div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 40px 1fr; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--gray-lighter); align-items: center;">
+              <div style="font-family:'DM Sans'; font-size:26px; font-weight:500; color: var(--navy); letter-spacing:-.01em;">Real-world action bridge</div>
+              <div style="font-family:'DM Sans'; font-size:28px; color: var(--salmon); text-align:center;">→</div>
+              <div style="font-family:'DM Sans'; font-size:26px; font-weight:500; color: var(--navy); letter-spacing:-.01em;">Enables capabilities in production</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="pill" style="margin-bottom: 18px;">What this means in practice</div>
+          <ol class="num-list">
+            <li class="num-item">
+              <div class="num-badge">01</div>
+              <div class="num-body">
+                <h3>Platform Team builds.</h3>
+                <p>The tooling JP specified is how we build the Company Brain and the agent fleet.</p>
+              </div>
+            </li>
+            <li class="num-item">
+              <div class="num-badge">02</div>
+              <div class="num-body">
+                <h3>Transformation Team deploys.</h3>
+                <p>The AINS methodology is how we deploy the tooling into a real client engagement.</p>
+              </div>
+            </li>
+            <li class="num-item">
+              <div class="num-badge">03</div>
+              <div class="num-body">
+                <h3>Operations Team runs.</h3>
+                <p>The MSP operations model is how we run capabilities in production after deployment.</p>
+              </div>
+            </li>
+          </ol>
+
+          <p class="closer-light" style="margin-top: 40px;">
+            JP's platform is what we build. The strategy is how we deliver it.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 — Why Us -->
+  <section data-label="13 Why Us" style="background:var(--navy);">
+    <div class="frame frame-dark">
+      <div class="chrome">
+        <div class="chrome-mark"><span class="chrome-dot"></span><span>13 / Why Us</span></div>
+        <div class="chrome-right">Peach Pilot — Internal</div>
+      </div>
+
+      <div style="margin-top: 36px; display:grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items:end;">
+        <h2 class="h-title" style="color:#fff; font-size: 60px;">Two reasons we win.</h2>
+        <p class="h-subtitle" style="padding-bottom: 4px; font-size: 28px;">
+          A flywheel that compounds across clients. A team that has built and exited before.
+        </p>
+      </div>
+
+      <div style="margin-top: 28px;">
+        <div class="pill" style="margin-bottom: 14px;">01 / The Flywheel</div>
+        <div class="fly-steps">
+          <div class="fly-step">
+            <div class="eng">Engagement 01</div>
+            <div class="big">Built from scratch</div>
+            <p class="txt">Consulting-heavy. First X-Ray template, first capability productized. The methodology gets written down.</p>
+          </div>
+          <div class="fly-step">
+            <div class="eng">Engagement 05</div>
+            <div class="big">40% faster delivery</div>
+            <p class="txt">Discovery partially automated. The second insurance agency inherits what we learned at the first.</p>
+          </div>
+          <div class="fly-step">
+            <div class="eng">Engagement 10</div>
+            <div class="big">Margins expand</div>
+            <p class="txt">Most work is configuration, not construction. A competitor starting at engagement one is permanently behind.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 32px;">
+        <div class="pill" style="margin-bottom: 14px;">02 / The Team</div>
+        <div class="team-grid" style="grid-template-columns: repeat(3, 1fr); max-width: 1400px;">
+          <div class="team-card">
+            <div class="team-portrait">MM</div>
+            <div>
+              <h3>Mario Montag</h3>
+              <div class="role" style="margin-top: 8px;">CEO</div>
+            </div>
+            <p>Co-founded Predikto, enterprise ML. Exited to a Fortune 50. 13 years at McKinsey, PwC, and Hitachi. Second time building an enterprise AI company.</p>
+          </div>
+          <div class="team-card">
+            <div class="team-portrait">JJ</div>
+            <div>
+              <h3>JP James</h3>
+              <div class="role" style="margin-top: 8px;">Co-Founder &amp; Chairman</div>
+            </div>
+            <p>Chairman of Hive Financial Assets. US patent holder in AI/ML. Georgia TITAN 100. Senior Fellow, National War College. Teaches AI at Georgia Tech.</p>
+          </div>
+          <div class="team-card">
+            <div class="team-portrait">BL</div>
+            <div>
+              <h3>Ben Lull</h3>
+              <div class="role" style="margin-top: 8px;">Lead Architect</div>
+            </div>
+            <p>Operates, extends, and hardens the platform. Makes the methodology repeatable across clients.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="closer" style="margin-top: 28px; padding-top: 18px;">
+        The flywheel gives us the economics. The team gives us the shot.
+      </p>
+    </div>
+  </section>
+
+</deck-stage>
+
+<!-- Tweaks panel -->
+<div id="tweaks-panel" style="display:none; position:fixed; right:20px; bottom:20px; width:320px; background:#1C1629; color:#fff; font-family:'Inter',sans-serif; padding:20px 22px; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.5); z-index:9999; border:1px solid rgba(240,138,106,0.25);">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <div style="font-family:'DM Sans',sans-serif; font-size:18px; font-weight:500;">Tweaks</div>
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:#F08A6A;">Live</div>
+  </div>
+
+  <label style="display:block; margin-bottom:14px;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B8C0C5; margin-bottom:6px;">Accent color</div>
+    <input type="color" id="tw-accent" style="width:100%; height:36px; background:transparent; border:1px solid rgba(255,255,255,0.2); border-radius:6px; cursor:pointer;">
+  </label>
+
+  <label style="display:block; margin-bottom:14px;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B8C0C5; margin-bottom:6px;">Dark background</div>
+    <input type="color" id="tw-navy" style="width:100%; height:36px; background:transparent; border:1px solid rgba(255,255,255,0.2); border-radius:6px; cursor:pointer;">
+  </label>
+
+  <label style="display:block; margin-bottom:14px;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B8C0C5; margin-bottom:6px;">Light background</div>
+    <input type="color" id="tw-cream" style="width:100%; height:36px; background:transparent; border:1px solid rgba(255,255,255,0.2); border-radius:6px; cursor:pointer;">
+  </label>
+
+  <label style="display:block; margin-bottom:14px;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B8C0C5; margin-bottom:6px;">Heading font</div>
+    <select id="tw-heading" style="width:100%; height:36px; background:#2A2235; color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:6px; padding:0 10px; font-family:inherit;">
+      <option value="DM Sans">DM Sans</option>
+      <option value="Inter">Inter</option>
+      <option value="Space Grotesk">Space Grotesk</option>
+      <option value="IBM Plex Sans">IBM Plex Sans</option>
+      <option value="Fraunces">Fraunces</option>
+    </select>
+  </label>
+
+  <label style="display:block; margin-bottom:8px;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#B8C0C5; margin-bottom:6px;">Chrome visibility</div>
+    <select id="tw-chrome" style="width:100%; height:36px; background:#2A2235; color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:6px; padding:0 10px; font-family:inherit;">
+      <option value="shown">Shown</option>
+      <option value="hidden">Hidden</option>
+    </select>
+  </label>
+</div>
+
+<script>
+(function() {
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "accent": "#F08A6A",
+    "navy": "#1C1629",
+    "cream": "#FAF7F4",
+    "heading": "DM Sans",
+    "chrome": "shown"
+  }/*EDITMODE-END*/;
+
+  const state = { ...TWEAK_DEFAULTS };
+  const panel = document.getElementById('tweaks-panel');
+
+  function apply() {
+    const r = document.documentElement.style;
+    r.setProperty('--salmon', state.accent);
+    r.setProperty('--navy', state.navy);
+    r.setProperty('--cream', state.cream);
+    // derive navy-2 slightly lighter
+    r.setProperty('--navy-2', shade(state.navy, 10));
+    document.querySelectorAll('.h-title, .h-title-xl, .h-subtitle, .cover-title, .opener-title, .num-body h3, .cap-name, .step h4, .team-card h3, .rev-card h3, .twin-panel h3, .re-mode h4, .arch-col .col-title, .fly-step .big, .wedge-panel .big, .wedge-panel .kv .v, .vchip').forEach(el => {
+      el.style.fontFamily = `'${state.heading}', sans-serif`;
+    });
+    document.querySelectorAll('.chrome').forEach(el => {
+      el.style.display = state.chrome === 'hidden' ? 'none' : '';
+    });
+
+    document.getElementById('tw-accent').value = state.accent;
+    document.getElementById('tw-navy').value = state.navy;
+    document.getElementById('tw-cream').value = state.cream;
+    document.getElementById('tw-heading').value = state.heading;
+    document.getElementById('tw-chrome').value = state.chrome;
+  }
+
+  function shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    const r = Math.min(255, ((n >> 16) & 255) + amt);
+    const g = Math.min(255, ((n >> 8) & 255) + amt);
+    const b = Math.min(255, (n & 255) + amt);
+    return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+  }
+
+  function loadFont(family) {
+    const id = 'tweak-font-' + family.replace(/\s+/g, '');
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/\s+/g, '+')}:wght@300;400;500;600&display=swap`;
+    document.head.appendChild(link);
+  }
+
+  function set(key, val) {
+    state[key] = val;
+    if (key === 'heading') loadFont(val);
+    apply();
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: val } }, '*');
+  }
+
+  window.addEventListener('message', (e) => {
+    const d = e.data || {};
+    if (d.type === '__activate_edit_mode') panel.style.display = 'block';
+    if (d.type === '__deactivate_edit_mode') panel.style.display = 'none';
+  });
+
+  document.getElementById('tw-accent').addEventListener('input', e => set('accent', e.target.value));
+  document.getElementById('tw-navy').addEventListener('input', e => set('navy', e.target.value));
+  document.getElementById('tw-cream').addEventListener('input', e => set('cream', e.target.value));
+  document.getElementById('tw-heading').addEventListener('change', e => set('heading', e.target.value));
+  document.getElementById('tw-chrome').addEventListener('change', e => set('chrome', e.target.value));
+
+  loadFont(state.heading);
+  apply();
+
+  window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+})();
+</script>
+
+</body>
+</html>
